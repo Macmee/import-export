@@ -25,6 +25,8 @@ import Duck from './Duck.js';
 import { Food, Pond } from 'Duck.js';
 ```
 
+and:
+
 ```
 // Duck.js
 
