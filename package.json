@@ -1,0 +1,14 @@
+ 
+  "name": "import-export",
+  "version": "1.0.0",
+  "description": "Lets you use ECMA6 import/export module syntax inside nodejs (simply by just requiring this module)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "= <=> (=)",
+  "license": "ISC",
+  "dependencies": {
+    "redis": "^2.6.1"
+  }
+}
