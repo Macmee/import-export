@@ -1,14 +1,30 @@
- 
+{
   "name": "import-export",
-  "version": "1.0.0",
-  "description": "Lets you use ECMA6 import/export module syntax inside nodejs (simply by just requiring this module)",
+  "version": "1.0.1",
+  "description": "Use ECMA6 import/export syntax from within NodeJS (simply require this module)",
   "main": "index.js",
+  "dependencies": {
+    "node-hook": "^0.4.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Macmee/import-export.git"
+  },
+  "keywords": [
+    "import",
+    "export",
+    "module",
+    "ecma6",
+    "commonjs"
+  ],
   "author": "= <=> (=)",
   "license": "ISC",
-  "dependencies": {
-    "redis": "^2.6.1"
-  }
+  "bugs": {
+    "url": "https://github.com/Macmee/import-export/issues"
+  },
+  "homepage": "https://github.com/Macmee/import-export"
 }
