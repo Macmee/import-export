@@ -1,6 +1,7 @@
 var hook = require('node-hook');
 
 hook.hook('.js', (src, name) => {
+  src = src.replace(/import \* as (.*?) from '(.*?)'/g, 'const $1 = require("$2")');
   src = src.replace(/import ([^{]*?) from '(.*?)'/g, 'const $1 = require("$2")');
   src = src.replace(/export default ([^ ]*)/g, 'module.exports = $1');
   src = src.replace(/export (var|let|const) ([a-zA-Z0-9_$]*)/g, '$1 $2 = module.exports.$2');

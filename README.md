@@ -23,6 +23,7 @@ Then inside your other files you require you can use ES6 module syntax:
 
 import Duck from './Duck.js';
 import { Food, Pond } from 'Duck.js';
+import * as Duck from 'Duck.js';
 ```
 
 and:
