@@ -73,7 +73,11 @@ hook.hook('.js', (src, name) => {
     `})`
   }
   src = src.replace(
-    /\bimport ([^{]*?) from (["'])(.*?)\2/g,
+    /\bimport [*] as (\w+?) from (["'])(.*?)\2/g,
+    'var $1;require("$3").importer(ns=>$1=ns)'
+  );
+  src = src.replace(
+    /\bimport (\w+?) from (["'])(.*?)\2/g,
     (all, $1, $2, $3) => importAll($3, {[$1]: "default"})
   );
   src = src.replace(
