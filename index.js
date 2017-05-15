@@ -38,6 +38,25 @@ hook.hook('.js', (src, name) => {
    */
 
   /**
+   * Converts a name expression string into a map from destination names to source names.
+   *
+   * @param {string} identifier_list eg. "foo as bar, baz"
+   * @return {object} eg. {bar:"foo",baz:"baz"}
+   */
+  function identifierList(identifier_list) {
+    var dest_to_src = {};
+    identifier_list.split(/,/).forEach(identifier => {
+      var md;
+      if(md = identifier.match(/(\w+) as (\w+)/)) {
+        dest_to_src[md[2]] = md[1];
+      } else {
+        dest_to_src[identifier.trim()] = identifier.trim();;
+      }
+    });
+    return dest_to_src;
+  }
+
+  /**
    * Returns injectable source to import the given destination-to-source
    * map of names from the given file.
    *
@@ -59,11 +78,7 @@ hook.hook('.js', (src, name) => {
   );
   src = src.replace(
     /\bimport {([^{]*?)} from (["'])(.*?)\2/g,
-    (all, $1, $2, $3) => {
-      var names = {};
-      $1.split(/,/).forEach(name => names[name.trim()] = null);
-      return importAll($3, names);
-    }
+    (all, $1, $2, $3) => importAll($3, identifierList($1))
   );
 
   src = src.replace(/\bexport default +/g, 'module.exports.ns.default = ');
