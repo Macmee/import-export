@@ -115,14 +115,18 @@ hook.hook('.js', (src, name) => {
   );
 
   src = src.replace(/\bexport default +/g, 'module.exports.ns.default = ');
-  src = src.replace(/\bexport (var|let|const) ([a-zA-Z0-9_$]*)/g, (all, $1, $2) => {
-    return `module.exports.ns.${$2} = ${$1} ${$2}`;
+
+  var late_exports = [];
+  src = src.replace(/\bexport (var|let|const) ((?:\w+(?:=[^,\n;]+)?,\s*)*\w+(?:=[^,\n;]+)?)/g, (all, $1, $2) => {
+    late_exports = late_exports.concat(
+      $2.split(/,/).map(n => n.replace(/=.*/, "").trim())
+    );
+    return `${$1} ${$2}`;
   });
   src = src.replace(
     /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
     'module.exports.ns.$2 = $1 $2'
   );
-
   src = src.replace(/\bexport {(.*?)}/g, (all, $1) => {
     var names = identifierList($1);
     return Object.keys(names).map(
@@ -134,6 +138,7 @@ hook.hook('.js', (src, name) => {
       "module.exports.ns={};" +
       "module.exports.importer=f=>importers.push(f);" +
       src + "\n" +
+      late_exports.map(n => `module.exports.ns.${n}=${n};`).join("") +
       "module.exports.importer=f=>f(module.exports.ns);" +
       "importers.forEach(f=>f(module.exports.ns));";
   } else {
