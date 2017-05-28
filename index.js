@@ -6,7 +6,7 @@ hook.hook('.js', (src, name) => {
     seen_names[$1.trim()] = $3;
     return `imported["${$3}"] = require("${$3}")`;
   });
-  src = src.replace(/\bexport default ([^ ]*)/g, 'module.exports = $1');
+  src = src.replace(/\bexport default +/g, 'module.exports = ');
   src = src.replace(/\bexport (var|let|const) ([a-zA-Z0-9_$]*)/g, '$1 $2 = module.exports.$2');
   src = src.replace(/\bexport function ([a-zA-Z0-9_$]*)/g, 'var $1 = module.exports.$1 = function');
   src = src.replace(/\bexport class ([a-zA-Z0-9_$]*)/g, 'var $1 = module.exports.$1 = class');
