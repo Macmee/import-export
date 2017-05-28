@@ -8,8 +8,10 @@ hook.hook('.js', (src, name) => {
   });
   src = src.replace(/\bexport default +/g, 'module.exports.ns = ');
   src = src.replace(/\bexport (var|let|const) ([a-zA-Z0-9_$]*)/g, '$1 $2 = module.exports.ns.$2');
-  src = src.replace(/\bexport function ([a-zA-Z0-9_$]*)/g, 'var $1 = module.exports.ns.$1 = function');
-  src = src.replace(/\bexport class ([a-zA-Z0-9_$]*)/g, 'var $1 = module.exports.ns.$1 = class');
+  src = src.replace(
+    /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
+    'var $2 = module.exports.ns.$2 = $1'
+);
   src = src.replace(/\bexport {(.*?)}/g, (all, $1) => {
     var names = $1.split(/,/);
     return names.map(
