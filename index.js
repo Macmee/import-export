@@ -93,6 +93,10 @@ hook.hook('.js', (src, name) => {
     /\bimport {([^{]*?)} from (["'])(.*?)\2/g,
     (all, $1, $2, $3) => importAll($3, identifierList($1))
   );
+  src = src.replace(
+    /\bimport (["'])(.*?)\1/g,
+    'require("$2")'
+  );
 
   src = src.replace(/\bexport default +/g, 'module.exports.ns.default = ');
   src = src.replace(/\bexport (var|let|const) ([a-zA-Z0-9_$]*)/g, (all, $1, $2) => {
