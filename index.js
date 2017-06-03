@@ -101,12 +101,12 @@ hook.hook('.js', (src, name) => {
     ).join(";");
   });
   if(src.match(/\bmodule.exports\b/)) {
-    return "var importers = []; " +
-      "module.exports.ns = {}; " +
-      "module.exports.importer = f => importers.push(f);" +
+    return "var importers=[];" +
+      "module.exports.ns={};" +
+      "module.exports.importer=f=>importers.push(f);" +
       src + "\n" +
-      "module.exports.importer = f => f(module.exports.ns);" +
-      "importers.forEach(f => f(module.exports.ns));";
+      "module.exports.importer=f=>f(module.exports.ns);" +
+      "importers.forEach(f=>f(module.exports.ns));";
   } else {
     return src;
   }
