@@ -98,6 +98,22 @@ hook.hook('.js', (src, name) => {
     'require("$2")'
   );
 
+  src = src.replace(
+    /\bexport [*] from (["'])(.*?)\1/g,
+    'require("$2").importer(ns=>Object.assign(module.exports.ns,ns,{default:module.exports.ns.default}))'
+  );
+  src = src.replace(
+    /\bexport [{]([^{]*?)[}] from (["'])(.*?)\2/g,
+    (all, $1, $2, $3) => {
+      var names = identifierList($1);
+      return `require("${$3}").importer(ns=>{` +
+        Object.keys(names).map(name => {
+          return `module.exports.ns.${name}=ns.${names[name]}`
+        }).join(";") +
+        `})`
+    }
+  );
+
   src = src.replace(/\bexport default +/g, 'module.exports.ns.default = ');
   src = src.replace(/\bexport (var|let|const) ([a-zA-Z0-9_$]*)/g, (all, $1, $2) => {
     return `module.exports.ns.${$2} = ${$1} ${$2}`;
