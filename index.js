@@ -1,5 +1,5 @@
 var hook = require('node-hook');
-const hookFn = (src, name) => {
+var hookFn = (src, name) => {
   src = src.replace(/import ([^{]*?) from '(.*?)'/g, 'const $1 = require("$2")');
   src = src.replace(/export default ([^ ]*)/g, 'module.exports = $1');
   src = src.replace(/export (var|let|const) ([a-zA-Z0-9_$]*)/g, '$1 $2 = module.exports.$2');
@@ -15,3 +15,5 @@ const hookFn = (src, name) => {
 
 hook.hook('.js', hookFn);
 hook.hook('.jsx', hookFn);
+
+module.exports = (...exts) => exts.forEach((ext) => hook.hook(ext, hookFn));
