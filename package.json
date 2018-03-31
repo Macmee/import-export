@@ -21,7 +21,7 @@
     "ecma6",
     "commonjs"
   ],
-  "author": "= <=> (=)",
+  "author": "Jim Driscoll",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/jj101k/eximport/issues"
