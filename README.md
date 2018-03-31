@@ -1,8 +1,10 @@
-##What is this?
+## What is this?
 
 This module lets you use ES6 modules (import/export syntax) in nodejs modules.
 
-##How to use
+This was forked from the unmaintained `import-export` module.
+
+## How to use
 
 In your main file require the module:
 
