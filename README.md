@@ -1,46 +1,41 @@
-## What is this?
+# eximport
 
-This module lets you use ES6 modules (import/export syntax) in nodejs modules.
+This module brings support for ECMAScript 6 import/export statements to your projects.
 
 This was forked from the unmaintained `import-export` module.
 
-## How to use
+## Usage
 
-In your main file require the module:
+In your top-level .js file require this module before your other project
+includes. Node's module loader will be hooked to rewrite both `import` and
+`export` statements into mutually compatible wrappers.
 
-```
-// index.js
-
-require('import-export');
-
-require('./some-other-file1.js');
-require('./some-other-file2.js');
-...
-```
-
-Then inside your other files you require you can use ES6 module syntax:
+e.g. you might have an `index.js` like:
 
 ```
-// some-other-file1.js
+require("eximport")
 
-import Duck from './Duck.js';
-import { Food, Pond } from 'Duck.js';
+require("./src/foo")
 ```
 
-and:
+...and a `src/foo.js` like:
 
 ```
-// Duck.js
+import Bar from "./bar"
+Bar.baz()
+```
 
-export default class Duck {
-  ...
+...and a `src/bar.js` like:
+
+```
+class Bar {
+  static baz() {
+    console.log("Hello World")
+  }
 }
+export default Bar
+```
 
-export class Pond {
-  ...
-}
+## Notes/bugs
 
-export class Food {
-  ...
-}
-``` 
+This cannot modify the file it's required in.
