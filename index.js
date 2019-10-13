@@ -145,7 +145,7 @@ hook.hook('.js', (src, name) => {
 
   src = src.replace(/\bexport default +/g, () => {
     exports_seen++
-    return 'module.exports.ns.default = '
+    return 'module.exports.ns.default='
   })
 
   var late_exports = [];
