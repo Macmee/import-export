@@ -61,16 +61,16 @@ hook.hook('.js', (src, name) => {
    * map of names from the given file.
    *
    * @param {string} file
-   * @param {object} dest_to_src
+   * @param {{[local_name: string]: string}} dest_to_src
    * @return {string}
    */
   function importAll(file, dest_to_src) {
-    return `var ${Object.keys(dest_to_src).join(",")};` +
-    `require("${file}").then(ns=>{` +
-    Object.keys(dest_to_src).map(dest =>
-      `${dest}=ns.${dest_to_src[dest]}`
-    ).join(";") +
-    `})`
+    const local_names = Object.keys(dest_to_src)
+    const invalid_names = local_names.filter(n => !n.match(/^\w+$/))
+    if(invalid_names.length) {
+      throw new Error(`Invalid import name(s): ${invalid_names}`)
+    }
+    return `var ${local_names.join(",")};require("${file}").then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
   }
 
   src = src.replace(
