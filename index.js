@@ -88,15 +88,26 @@ hook.hook(".js", (src, name) => {
      * @type {string[]}
      */
     const late_exports = []
+    /**
+     *
+     * @param {string} type
+     * @param {string} names_values
+     */
+    function add_late_export(type, names_values) {
+        for(const nv of names_values.split(/,/)) {
+            const n = nv.replace(/=.*/, "").trim()
+            if(n.match(/^[a-zA-Z0-9_$]+$/)) {
+                late_exports.push(n)
+            } else {
+                throw new Error(`Invalid export name: ${n}`)
+            }
+        }
+        return exporting(`${type} ${names_values}`)
+    }
     src = src
         .replace(
             /\bexport (var|let|const) ((?:[a-zA-Z0-9_$]+(?:=[^,\n;]+)?,\s*)*[a-zA-Z0-9_$]+(?:=[^,\n;]+)?)/g,
-            (all, $1, $2) => {
-                late_exports.push(
-                    ...$2.split(/,/).map(n => n.replace(/=.*/, "").trim())
-                )
-                return exporting(`${$1} ${$2}`)
-            }
+            (all, $1, $2) => add_late_export($1, $2)
         )
         .replace(
             /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
