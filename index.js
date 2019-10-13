@@ -64,7 +64,7 @@ class IdentifierList {
   }
 }
 
-hook.hook('.js', (src, name) => {
+hook.hook(".js", (src, name) => {
   /* How this works:
    *
    * At a simple level, `import {Foo} from "./foo"` is the same as
@@ -145,30 +145,40 @@ hook.hook('.js', (src, name) => {
 
   src = src.replace(/\bexport default +/g, () => {
     exports_seen++
-    return 'module.exports.ns.default='
+    return "module.exports.ns.default="
   })
 
-  var late_exports = [];
-  src = src.replace(/\bexport (var|let|const) ((?:\w+(?:=[^,\n;]+)?,\s*)*\w+(?:=[^,\n;]+)?)/g, (all, $1, $2) => {
-    exports_seen++
-    late_exports.push(
-      ...$2.split(/,/).map(n => n.replace(/=.*/, "").trim())
-    );
-    return `${$1} ${$2}`;
-  });
-  src = src.replace(
-    /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
-    () => {
-      exports_seen++
-      return 'module.exports.ns.$2=$1 $2'
-    }
-  );
-  src = src.replace(/\bexport {(.*?)}/g, (all, $1) => {
-    exports_seen++
-    return new IdentifierList($1).exportAll()
-  })
+  /**
+   * @type {string[]}
+   */
+  const late_exports = []
+  src = src
+    .replace(
+      /\bexport (var|let|const) ((?:\w+(?:=[^,\n;]+)?,\s*)*\w+(?:=[^,\n;]+)?)/g,
+      (all, $1, $2) => {
+        exports_seen++
+        late_exports.push(
+          ...$2.split(/,/).map(n => n.replace(/=.*/, "").trim())
+        )
+        return `${$1} ${$2}`
+      }
+    )
+    .replace(
+      /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
+      () => {
+        exports_seen++
+        return "module.exports.ns.$2=$1 $2"
+      }
+    )
+    .replace(
+      /\bexport {(.*?)}/g,
+      (all, $1) => {
+        exports_seen++
+        return new IdentifierList($1).exportAll()
+      }
+    )
   if(exports_seen) {
-    return `module.exports=require('eximport-bridge').bridge;${src}\nmodule.exports.commit({${late_exports.map(n => `"${n}":${n}`).join(",")}});`
+    return `module.exports=require("eximport-bridge").bridge;${src}\nmodule.exports.commit({${late_exports.map(n => `"${n}":${n}`).join(",")}});`
   } else {
     return src
   }
