@@ -38,12 +38,7 @@ export default Bar
 
 ## Return from require()
 
-This returns an anonymous object with keys:
-
-* importer: A function that finishes off imports which were incomplete, eg. due
-  to loops. This isn't usually necessary to call manually.
-* ns: The namespace object, containing all named exports and any default export
-  (called "default" if present)
+This returns an EximportBridge object.
 
 When you're using require() with an import/export module, you may either want to
 expose the whole namespace (`require(...).ns`), just the default

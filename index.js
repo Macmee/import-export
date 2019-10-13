@@ -147,13 +147,7 @@ hook.hook('.js', (src, name) => {
     ).join(";")
   })
   if(exports_seen) {
-    return "var importers=[];" +
-      "module.exports.ns={};" +
-      "module.exports.importer=f=>importers.push(f);" +
-      src + "\n" +
-      late_exports.map(n => `module.exports.ns.${n}=${n};`).join("") +
-      "module.exports.importer=f=>f(module.exports.ns);" +
-      "importers.forEach(f=>f(module.exports.ns));";
+    return `module.exports=require('eximport-bridge').bridge;${src}\nmodule.exports.commit({${late_exports.map(n => `"${n}":${n}`).join(",")}});`
   } else {
     return src
   }
