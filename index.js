@@ -127,26 +127,24 @@ hook.hook(".js", (src, name) => {
       `require($1)`
     )
   let exports_seen = 0
-
-  src = src.replace(
-    /\bexport [*] from ((["'`]).*?\2)/g,
-    (a, $1, $2) => {
-      exports_seen++
-      return `module.exports.exportFrom(require(${$1}))`
-    },
-  )
-  src = src.replace(
-    /\bexport [{]([^{]*?)[}] from ((["'`]).*?\3)/g,
-    (all, $1, $2, $3) => {
-      exports_seen++
-      return new IdentifierList($1).exportAllFrom($2)
-    }
-  )
-
-  src = src.replace(/\bexport default +/g, () => {
+  const exporting = (v) => {
     exports_seen++
-    return "module.exports.ns.default="
-  })
+    return v
+  }
+
+  src = src
+    .replace(
+      /\bexport [*] from ((["'`]).*?\2)/g,
+      (a, $1, $2) => exporting(`module.exports.exportFrom(require(${$1}))`)
+    )
+    .replace(
+      /\bexport [{]([^{]*?)[}] from ((["'`]).*?\3)/g,
+      (all, $1, $2, $3) => exporting(new IdentifierList($1).exportAllFrom($2))
+    )
+    .replace(
+      /\bexport default +/g,
+      () => exporting("module.exports.ns.default=")
+    )
 
   /**
    * @type {string[]}
@@ -156,26 +154,19 @@ hook.hook(".js", (src, name) => {
     .replace(
       /\bexport (var|let|const) ((?:[a-zA-Z0-9_$]+(?:=[^,\n;]+)?,\s*)*[a-zA-Z0-9_$]+(?:=[^,\n;]+)?)/g,
       (all, $1, $2) => {
-        exports_seen++
         late_exports.push(
           ...$2.split(/,/).map(n => n.replace(/=.*/, "").trim())
         )
-        return `${$1} ${$2}`
+        return exporting(`${$1} ${$2}`)
       }
     )
     .replace(
       /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
-      () => {
-        exports_seen++
-        return "module.exports.ns.$2=$1 $2"
-      }
+      (a, $1, $2) => exporting(`module.exports.ns.${$2}=${$1} ${$2}`)
     )
     .replace(
       /\bexport {(.*?)}/g,
-      (all, $1) => {
-        exports_seen++
-        return new IdentifierList($1).exportAll()
-      }
+      (all, $1) => exporting(new IdentifierList($1).exportAll())
     )
   if(exports_seen) {
     return `module.exports=require("eximport-bridge").bridge;${src}\nmodule.exports.commit({${late_exports.map(n => `"${n}":${n}`).join(",")}});`
