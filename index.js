@@ -103,40 +103,40 @@ hook.hook(".js", (src, name) => {
 
   src = src
     .replace(
-      /\bimport ([a-zA-Z0-9_$]+?), {([^{]*?)} from ((["']).*?\4)/g,
+      /\bimport ([a-zA-Z0-9_$]+?), {([^{]*?)} from ((["'`]).*?\4)/g,
       `import $1 from $3;import {$2} from $3`
     )
     .replace(
-      /\bimport ([a-zA-Z0-9_$]+?), [*] as ([a-zA-Z0-9_$]+?) from ((["']).*?\4)/g,
+      /\bimport ([a-zA-Z0-9_$]+?), [*] as ([a-zA-Z0-9_$]+?) from ((["'`]).*?\4)/g,
       `import $1 from $3;import * as $2 from $3`
     )
     .replace(
-      /\bimport [*] as ([a-zA-Z0-9_$]+?) from ((["']).*?\3)/g,
+      /\bimport [*] as ([a-zA-Z0-9_$]+?) from ((["'`]).*?\3)/g,
       `var $1;require($2).then(ns=>$1=ns)`
     )
     .replace(
-      /\bimport ([a-zA-Z0-9_$]+?) from ((["']).*?\3)/g,
+      /\bimport ([a-zA-Z0-9_$]+?) from ((["'`]).*?\3)/g,
       `import {default as $1} from $2`
     )
     .replace(
-      /\bimport {([^{]*?)} from ((["']).*?\3)/g,
+      /\bimport {([^{]*?)} from ((["'`]).*?\3)/g,
       (all, $1, $2, $3) => new IdentifierList($1).importAllFrom($2)
     )
     .replace(
-      /\bimport ((["']).*?\2)/g,
+      /\bimport ((["'`]).*?\2)/g,
       `require($1)`
     )
   let exports_seen = 0
 
   src = src.replace(
-    /\bexport [*] from ((["']).*?\2)/g,
+    /\bexport [*] from ((["'`]).*?\2)/g,
     (a, $1, $2) => {
       exports_seen++
       return `module.exports.exportFrom(require(${$1}))`
     },
   )
   src = src.replace(
-    /\bexport [{]([^{]*?)[}] from ((["']).*?\3)/g,
+    /\bexport [{]([^{]*?)[}] from ((["'`]).*?\3)/g,
     (all, $1, $2, $3) => {
       exports_seen++
       return new IdentifierList($1).exportAllFrom($2)
