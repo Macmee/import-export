@@ -70,6 +70,10 @@ hook.hook('.js', (src, name) => {
     if(invalid_names.length) {
       throw new Error(`Invalid import name(s): ${invalid_names}`)
     }
+    const invalid_source_names = Object.values(dest_to_src).filter(n => !n.match(/^\w+$/))
+    if(invalid_source_names.length) {
+      throw new Error(`Invalid source name(s): ${invalid_source_names}`)
+    }
     return `var ${local_names.join(",")};require("${file}").then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
   }
 
