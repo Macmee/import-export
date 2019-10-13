@@ -13,7 +13,7 @@ class IdentifierList {
     this.destToSrc = {}
     for(const identifier of identifier_list.split(/,/)) {
       let md
-      if(md = identifier.match(/(\w+) as (\w+)/)) {
+      if(md = identifier.match(/([a-zA-Z0-9_$]+) as ([a-zA-Z0-9_$]+)/)) {
         this.add(md[2], md[1])
       } else {
         this.add(identifier.trim(), identifier.trim())
@@ -27,10 +27,10 @@ class IdentifierList {
    * @throws
    */
   add(local_name, remote_name) {
-    if(!local_name.match(/^\w+$/)) {
+    if(!local_name.match(/^[a-zA-Z0-9_$]+$/)) {
       throw new Error(`Invalid import name: ${local_name}`)
     }
-    if(!remote_name.match(/^\w+$/)) {
+    if(!remote_name.match(/^[a-zA-Z0-9_$]+$/)) {
       throw new Error(`Invalid export name: ${remote_name}`)
     }
     this.destToSrc[local_name] = remote_name
@@ -103,19 +103,19 @@ hook.hook(".js", (src, name) => {
 
   src = src
     .replace(
-      /\bimport (\w+?), {([^{]*?)} from ((["']).*?\4)/g,
+      /\bimport ([a-zA-Z0-9_$]+?), {([^{]*?)} from ((["']).*?\4)/g,
       `import $1 from $3;import {$2} from $3`
     )
     .replace(
-      /\bimport (\w+?), [*] as (\w+?) from ((["']).*?\4)/g,
+      /\bimport ([a-zA-Z0-9_$]+?), [*] as ([a-zA-Z0-9_$]+?) from ((["']).*?\4)/g,
       `import $1 from $3;import * as $2 from $3`
     )
     .replace(
-      /\bimport [*] as (\w+?) from ((["']).*?\3)/g,
+      /\bimport [*] as ([a-zA-Z0-9_$]+?) from ((["']).*?\3)/g,
       `var $1;require($2).then(ns=>$1=ns)`
     )
     .replace(
-      /\bimport (\w+?) from ((["']).*?\3)/g,
+      /\bimport ([a-zA-Z0-9_$]+?) from ((["']).*?\3)/g,
       `import {default as $1} from $2`
     )
     .replace(
@@ -154,7 +154,7 @@ hook.hook(".js", (src, name) => {
   const late_exports = []
   src = src
     .replace(
-      /\bexport (var|let|const) ((?:\w+(?:=[^,\n;]+)?,\s*)*\w+(?:=[^,\n;]+)?)/g,
+      /\bexport (var|let|const) ((?:[a-zA-Z0-9_$]+(?:=[^,\n;]+)?,\s*)*[a-zA-Z0-9_$]+(?:=[^,\n;]+)?)/g,
       (all, $1, $2) => {
         exports_seen++
         late_exports.push(
