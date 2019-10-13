@@ -1,4 +1,68 @@
-var hook = require('node-hook');
+const hook = require("node-hook")
+
+class IdentifierList {
+  /**
+   * Converts a name expression string into a map from destination names to source names.
+   *
+   * @param {string} identifier_list eg. "foo as bar, baz"
+   */
+  constructor(identifier_list) {
+    /**
+     * @type {{[local_name: string]: string}}
+     */
+    this.destToSrc = {}
+    for(const identifier of identifier_list.split(/,/)) {
+      let md
+      if(md = identifier.match(/(\w+) as (\w+)/)) {
+        this.add(md[2], md[1])
+      } else {
+        this.add(identifier.trim(), identifier.trim())
+      }
+    }
+  }
+  /**
+   *
+   * @param {string} local_name
+   * @param {string} remote_name
+   * @throws
+   */
+  add(local_name, remote_name) {
+    if(!local_name.match(/^\w+$/)) {
+      throw new Error(`Invalid import name: ${local_name}`)
+    }
+    if(!remote_name.match(/^\w+$/)) {
+      throw new Error(`Invalid export name: ${remote_name}`)
+    }
+    this.destToSrc[local_name] = remote_name
+  }
+  exportAll() {
+    return Object.keys(this.destToSrc).map(
+      k => `module.exports.ns.${k}=${this.destToSrc[k]}`
+    ).join(";")
+  }
+  /**
+   * Returns injectable source to export the given destination-to-source
+   * map of names from the given file.
+   *
+   * @param {string} file_quoted
+   * @return {string}
+   */
+  exportAllFrom(file_quoted) {
+    const local_names = Object.keys(this.destToSrc)
+    return `module.exports.exportFrom(require(${file_quoted}),{${local_names.map(name => `${name}:"${this.destToSrc[name]}"`).join(",")}})`
+  }
+  /**
+   * Returns injectable source to import the given destination-to-source
+   * map of names from the given file.
+   *
+   * @param {string} file_quoted
+   * @return {string}
+   */
+  importAllFrom(file_quoted) {
+    const local_names = Object.keys(this.destToSrc)
+    return `var ${local_names.join(",")};require(${file_quoted}).then(ns=>{${local_names.map(dest => `${dest}=ns.${this.destToSrc[dest]}`).join(";")}})`
+  }
+}
 
 hook.hook('.js', (src, name) => {
   /* How this works:
@@ -37,46 +101,6 @@ hook.hook('.js', (src, name) => {
    * one type of value has both its declaration and value hoisted: explicitly named functions.
    */
 
-  /**
-   * Converts a name expression string into a map from destination names to source names.
-   *
-   * @param {string} identifier_list eg. "foo as bar, baz"
-   * @return {object} eg. {bar:"foo",baz:"baz"}
-   */
-  function identifierList(identifier_list) {
-    var dest_to_src = {};
-    identifier_list.split(/,/).forEach(identifier => {
-      var md;
-      if(md = identifier.match(/(\w+) as (\w+)/)) {
-        dest_to_src[md[2]] = md[1];
-      } else {
-        dest_to_src[identifier.trim()] = identifier.trim();;
-      }
-    });
-    return dest_to_src;
-  }
-
-  /**
-   * Returns injectable source to import the given destination-to-source
-   * map of names from the given file.
-   *
-   * @param {string} file_quoted
-   * @param {{[local_name: string]: string}} dest_to_src
-   * @return {string}
-   */
-  function importAll(file_quoted, dest_to_src) {
-    const local_names = Object.keys(dest_to_src)
-    const invalid_names = local_names.filter(n => !n.match(/^\w+$/))
-    if(invalid_names.length) {
-      throw new Error(`Invalid import name(s): ${invalid_names}`)
-    }
-    const invalid_source_names = Object.values(dest_to_src).filter(n => !n.match(/^\w+$/))
-    if(invalid_source_names.length) {
-      throw new Error(`Invalid source name(s): ${invalid_source_names}`)
-    }
-    return `var ${local_names.join(",")};require(${file_quoted}).then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
-  }
-
   src = src
     .replace(
       /\bimport (\w+?), {([^{]*?)} from ((["']).*?\4)/g,
@@ -92,11 +116,11 @@ hook.hook('.js', (src, name) => {
     )
     .replace(
       /\bimport (\w+?) from ((["']).*?\3)/g,
-      (all, $1, $2, $3) => importAll($2, {[$1]: "default"})
+      `import {default as $1} from $2`
     )
     .replace(
       /\bimport {([^{]*?)} from ((["']).*?\3)/g,
-      (all, $1, $2, $3) => importAll($2, identifierList($1))
+      (all, $1, $2, $3) => new IdentifierList($1).importAllFrom($2)
     )
     .replace(
       /\bimport ((["']).*?\2)/g,
@@ -115,12 +139,7 @@ hook.hook('.js', (src, name) => {
     /\bexport [{]([^{]*?)[}] from ((["']).*?\3)/g,
     (all, $1, $2, $3) => {
       exports_seen++
-      const names = identifierList($1)
-      return `module.exports.exportFrom(require(${$2}),{` +
-        Object.keys(names).map(
-          name => `"${name}":"${names[name]}"`
-        ).join(",") +
-        `})`
+      return new IdentifierList($1).exportAllFrom($2)
     }
   )
 
@@ -146,10 +165,7 @@ hook.hook('.js', (src, name) => {
   );
   src = src.replace(/\bexport {(.*?)}/g, (all, $1) => {
     exports_seen++
-    const names = identifierList($1)
-    return Object.keys(names).map(
-        k => `module.exports.ns.${k}=${names[k]}`
-    ).join(";")
+    return new IdentifierList($1).exportAll()
   })
   if(exports_seen) {
     return `module.exports=require('eximport-bridge').bridge;${src}\nmodule.exports.commit({${late_exports.map(n => `"${n}":${n}`).join(",")}});`
