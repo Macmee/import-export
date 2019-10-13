@@ -60,11 +60,11 @@ hook.hook('.js', (src, name) => {
    * Returns injectable source to import the given destination-to-source
    * map of names from the given file.
    *
-   * @param {string} file
+   * @param {string} file_quoted
    * @param {{[local_name: string]: string}} dest_to_src
    * @return {string}
    */
-  function importAll(file, dest_to_src) {
+  function importAll(file_quoted, dest_to_src) {
     const local_names = Object.keys(dest_to_src)
     const invalid_names = local_names.filter(n => !n.match(/^\w+$/))
     if(invalid_names.length) {
@@ -74,49 +74,49 @@ hook.hook('.js', (src, name) => {
     if(invalid_source_names.length) {
       throw new Error(`Invalid source name(s): ${invalid_source_names}`)
     }
-    return `var ${local_names.join(",")};require(${JSON.stringify(file)}).then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
+    return `var ${local_names.join(",")};require(${file_quoted}).then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
   }
 
   src = src
     .replace(
-      /\bimport (\w+?), {([^{]*?)} from (["'])(.*?)\3/g,
-      (a, $1, $2, $3, $4) => `import ${$1} from ${JSON.stringify($4)};import {${$2}} from ${JSON.stringify($4)}`
+      /\bimport (\w+?), {([^{]*?)} from ((["']).*?\4)/g,
+      `import $1 from $3;import {$2} from $3`
     )
     .replace(
-      /\bimport (\w+?), [*] as (\w+?) from (["'])(.*?)\3/g,
-      (a, $1, $2, $3, $4) => `import ${$1} from ${JSON.stringify($4)};import * as ${$2} from ${JSON.stringify($4)}`
+      /\bimport (\w+?), [*] as (\w+?) from ((["']).*?\4)/g,
+      `import $1 from $3;import * as $2 from $3`
     )
     .replace(
-      /\bimport [*] as (\w+?) from (["'])(.*?)\2/g,
-      (a, $1, $2, $3) => `var ${$1};require(${JSON.stringify($3)}).then(ns=>${$1}=ns)`
+      /\bimport [*] as (\w+?) from ((["']).*?\3)/g,
+      `var $1;require($2).then(ns=>$1=ns)`
     )
     .replace(
-      /\bimport (\w+?) from (["'])(.*?)\2/g,
-      (all, $1, $2, $3) => importAll($3, {[$1]: "default"})
+      /\bimport (\w+?) from ((["']).*?\3)/g,
+      (all, $1, $2, $3) => importAll($2, {[$1]: "default"})
     )
     .replace(
-      /\bimport {([^{]*?)} from (["'])(.*?)\2/g,
-      (all, $1, $2, $3) => importAll($3, identifierList($1))
+      /\bimport {([^{]*?)} from ((["']).*?\3)/g,
+      (all, $1, $2, $3) => importAll($2, identifierList($1))
     )
     .replace(
-      /\bimport (["'])(.*?)\1/g,
-      (a, $1, $2) => `require(${JSON.stringify($2)})`
+      /\bimport ((["']).*?\2)/g,
+      `require($1)`
     )
   let exports_seen = 0
 
   src = src.replace(
-    /\bexport [*] from (["'])(.*?)\1/g,
+    /\bexport [*] from ((["']).*?\2)/g,
     (a, $1, $2) => {
       exports_seen++
-      return `module.exports.exportFrom(require(${JSON.stringify($2)}))`
+      return `module.exports.exportFrom(require(${$1}))`
     },
   )
   src = src.replace(
-    /\bexport [{]([^{]*?)[}] from (["'])(.*?)\2/g,
+    /\bexport [{]([^{]*?)[}] from ((["']).*?\3)/g,
     (all, $1, $2, $3) => {
       exports_seen++
       const names = identifierList($1)
-      return `module.exports.exportFrom(require(${JSON.stringify($3)}),{` +
+      return `module.exports.exportFrom(require(${$2}),{` +
         Object.keys(names).map(
           name => `"${name}":"${names[name]}"`
         ).join(",") +
