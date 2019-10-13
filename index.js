@@ -74,40 +74,41 @@ hook.hook('.js', (src, name) => {
     if(invalid_source_names.length) {
       throw new Error(`Invalid source name(s): ${invalid_source_names}`)
     }
-    return `var ${local_names.join(",")};require("${file}").then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
+    return `var ${local_names.join(",")};require(${JSON.stringify(file)}).then(ns=>{${local_names.map(dest => `${dest}=ns.${dest_to_src[dest]}`).join(";")}})`
   }
 
-  src = src.replace(
-    /\bimport (\w+?), {([^{]*?)} from (["'])(.*?)\3/g,
-    'import $1 from "$4"; import {$2} from "$4"'
-  );
-  src = src.replace(
-    /\bimport (\w+?), [*] as (\w+?) from (["'])(.*?)\3/g,
-    'import $1 from "$4"; import * as $2 from "$4"'
-  );
-  src = src.replace(
-    /\bimport [*] as (\w+?) from (["'])(.*?)\2/g,
-    'var $1;require("$3").then(ns=>$1=ns)'
-  );
-  src = src.replace(
-    /\bimport (\w+?) from (["'])(.*?)\2/g,
-    (all, $1, $2, $3) => importAll($3, {[$1]: "default"})
-  );
-  src = src.replace(
-    /\bimport {([^{]*?)} from (["'])(.*?)\2/g,
-    (all, $1, $2, $3) => importAll($3, identifierList($1))
-  );
-  src = src.replace(
-    /\bimport (["'])(.*?)\1/g,
-    'require("$2")'
-  );
+  src = src
+    .replace(
+      /\bimport (\w+?), {([^{]*?)} from (["'])(.*?)\3/g,
+      (a, $1, $2, $3, $4) => `import ${$1} from ${JSON.stringify($4)};import {${$2}} from ${JSON.stringify($4)}`
+    )
+    .replace(
+      /\bimport (\w+?), [*] as (\w+?) from (["'])(.*?)\3/g,
+      (a, $1, $2, $3, $4) => `import ${$1} from ${JSON.stringify($4)};import * as ${$2} from ${JSON.stringify($4)}`
+    )
+    .replace(
+      /\bimport [*] as (\w+?) from (["'])(.*?)\2/g,
+      (a, $1, $2, $3) => `var ${$1};require(${JSON.stringify($3)}).then(ns=>${$1}=ns)`
+    )
+    .replace(
+      /\bimport (\w+?) from (["'])(.*?)\2/g,
+      (all, $1, $2, $3) => importAll($3, {[$1]: "default"})
+    )
+    .replace(
+      /\bimport {([^{]*?)} from (["'])(.*?)\2/g,
+      (all, $1, $2, $3) => importAll($3, identifierList($1))
+    )
+    .replace(
+      /\bimport (["'])(.*?)\1/g,
+      (a, $1, $2) => `require(${JSON.stringify($2)})`
+    )
   let exports_seen = 0
 
   src = src.replace(
     /\bexport [*] from (["'])(.*?)\1/g,
     (a, $1, $2) => {
       exports_seen++
-      return `module.exports.exportFrom(require("${$2}"))`
+      return `module.exports.exportFrom(require(${JSON.stringify($2)}))`
     },
   )
   src = src.replace(
@@ -115,7 +116,7 @@ hook.hook('.js', (src, name) => {
     (all, $1, $2, $3) => {
       exports_seen++
       const names = identifierList($1)
-      return `module.exports.exportFrom(require("${$3}"),{` +
+      return `module.exports.exportFrom(require(${JSON.stringify($3)}),{` +
         Object.keys(names).map(
           name => `"${name}":"${names[name]}"`
         ).join(",") +
