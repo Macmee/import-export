@@ -66,7 +66,7 @@ hook.hook('.js', (src, name) => {
    */
   function importAll(file, dest_to_src) {
     return `var ${Object.keys(dest_to_src).join(",")};` +
-    `require("${file}").importer(ns=>{` +
+    `require("${file}").then(ns=>{` +
     Object.keys(dest_to_src).map(dest =>
       `${dest}=ns.${dest_to_src[dest]}`
     ).join(";") +
@@ -83,7 +83,7 @@ hook.hook('.js', (src, name) => {
   );
   src = src.replace(
     /\bimport [*] as (\w+?) from (["'])(.*?)\2/g,
-    'var $1;require("$3").importer(ns=>$1=ns)'
+    'var $1;require("$3").then(ns=>$1=ns)'
   );
   src = src.replace(
     /\bimport (\w+?) from (["'])(.*?)\2/g,
@@ -103,7 +103,7 @@ hook.hook('.js', (src, name) => {
     /\bexport [*] from (["'])(.*?)\1/g,
     (a, $1, $2) => {
       exports_seen++
-      return `require("${$2}").importer(ns=>Object.assign(module.exports.ns,ns,{default:module.exports.ns.default}))`
+      return `require("${$2}").then(ns=>Object.assign(module.exports.ns,ns,{default:module.exports.ns.default}))`
     },
   )
   src = src.replace(
@@ -111,7 +111,7 @@ hook.hook('.js', (src, name) => {
     (all, $1, $2, $3) => {
       exports_seen++
       const names = identifierList($1)
-      return `require("${$3}").importer(ns=>{` +
+      return `require("${$3}").then(ns=>{` +
         Object.keys(names).map(
           name => `module.exports.ns.${name}=ns.${names[name]}`
         ).join(";") +
