@@ -73,7 +73,7 @@ hook.hook(".js", (src, name) => {
     src = src
         .replace(
             /\bexport [*] from ((["'`]).*?\2)/g,
-            (a, $1, $2) => exporting(`module.exports.exportFrom(require(${$1}))`)
+            (a, $1, $2) => exporting(`eximportBridge.exportFrom(require(${$1}))`)
         )
         .replace(
             /\bexport [{]([^{]*?)[}] from ((["'`]).*?\3)/g,
@@ -81,7 +81,7 @@ hook.hook(".js", (src, name) => {
         )
         .replace(
             /\bexport default +/g,
-            () => exporting("module.exports.ns.default=")
+            () => exporting("eximportBridge.ns.default=")
         )
 
     /**
@@ -111,14 +111,14 @@ hook.hook(".js", (src, name) => {
         )
         .replace(
             /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
-            (a, $1, $2) => exporting(`module.exports.ns.${$2}=${$1} ${$2}`)
+            (a, $1, $2) => exporting(`eximportBridge.ns.${$2}=${$1} ${$2}`)
         )
         .replace(
             /\bexport {(.*?)}/g,
             (all, $1) => exporting(new IdentifierList($1).exportAll())
         )
     if(exports_seen) {
-        return `module.exports=require("eximport-bridge").bridge;${src}\nmodule.exports.commit({${late_exports.map(n => `${n}:${n}`).join(",")}});`
+        return `eximportBridge=require("eximport-bridge").bridge;module.exports=eximportBridge;${src}\neximportBridge.commit({${late_exports.map(n => `${n}:${n}`).join(",")}});`
     } else {
         return src
     }
