@@ -1,10 +1,16 @@
 # eximport
 
-This module brings support for ECMAScript 6 import/export statements to your projects.
+This module brings support for ECMAScript 6 import/export statements to your
+projects.
 
-This was forked from the unmaintained `import-export` module.
+This was forked from the unmaintained `import-export` package.
 
-
+This exists because Node itself does not support ES6 modules currently - see
+https://nodejs.org/api/esm.html - but the functionality is useful if for little
+more reason than that it's more terse. If/when Node gets production es6 module
+support this package will become redundant and probably stop being maintained,
+because more complicated scenarios absolutely require that you can rearrange the
+AST.
 
 ## Usage
 
