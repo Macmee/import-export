@@ -44,6 +44,33 @@ When you're using require() with an import/export module, you may either want to
 expose the whole namespace (`require(...)`), just the default
 (`require(...).default`) or a specific named export (`require(...).Foo`)
 
+## Resolving Non-Immediate Evaluation
+
+Under some circumstances, evaluation might not complete in the current execution
+context, for example this may happen where there's a mutual dependency between
+two files. If this is the case, you might get some symbols defined immediately
+and some later. If this comes up, you can call `.then(...)` on the bridge
+object, eg:
+
+```
+var foo = require("foo")
+foo._bridge.then(resolved_ns => foo = resolved_ns)
+```
+
+This will reassign the namespace once it's available. If you prefer to have no
+namespace at all until it's resolved, you can do:
+
+```
+var foo
+require("foo")._bridge.then(ns => foo = ns)
+```
+
+Or in async context:
+
+```
+const foo = await require("foo")._bridge
+```
+
 ## Notes/bugs & Known Limitations
 
 ### Self-modifying
