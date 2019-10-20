@@ -1,3 +1,9 @@
+# 1.1.1
+
+- *Bug*: if one exportable file was included and required another, the promise
+  for the first would never fire and the namespace for the first past the
+  relevant `import` would appear on the second.
+
 # 1.1.0
 
 - *Incompatible change*: you no longer use `.ns` on export lines, instead you
