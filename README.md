@@ -15,7 +15,7 @@ e.g. you might have an `index.js` like:
 ```
 require("eximport")
 
-module.exports = require("./src/foo").ns
+module.exports = require("./src/foo")
 ```
 
 ...and a `src/foo.js` like:
@@ -41,8 +41,8 @@ export default Bar
 This returns an EximportBridge object.
 
 When you're using require() with an import/export module, you may either want to
-expose the whole namespace (`require(...).ns`), just the default
-(`require(...).ns.default`) or a specific named export (`require(...).ns.Foo`)
+expose the whole namespace (`require(...)`), just the default
+(`require(...).default`) or a specific named export (`require(...).Foo`)
 
 ## Notes/bugs & Known Limitations
 

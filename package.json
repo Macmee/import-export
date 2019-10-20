@@ -4,7 +4,7 @@
   "description": "Use ECMA6 import/export syntax from within NodeJS (simply require this module)",
   "main": "index.js",
   "dependencies": {
-    "eximport-bridge": "^1.0.0",
+    "eximport-bridge": "^1.1.0",
     "node-hook": "^0.4.0"
   },
   "devDependencies": {},
