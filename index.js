@@ -3,41 +3,10 @@ const hook = require("node-hook")
 const IdentifierList = require("./lib/identifier-list")
 
 hook.hook(".js", (src, name) => {
-    /* How this works:
-    *
-    * At a simple level, `import {Foo} from "./foo"` is the same as
-    * `var Foo = require("./foo").Foo`. Unfortunately it's not quite that simple because
-    * "export" hoists (its names exist before the code delaring them is executed), which is
-    * very valuable when you have circular references but needs to be emulated here.
-    *
-    * Instead, the code `import {Foo} from "./foo"` becomes roughly:
-    *
-    *     var Foo = require("./foo").Foo; // Original line position
-    *     // Other code before the main script run starts...
-    *     Foo = require("./foo").Foo;
-    *
-    * This means that we can fill in the namespace entry early and then before anything really
-    * uses it we can insert the final value. Specifically, we can do that as soon as the
-    * exporting module body execution finishes.
-    *
-    * The initial "var" line has to appear at its original (presumably top) level; by doing so
-    * it inserts an entry directly into the correct namespace. It won't work inside a function.
-    * Once the name exists though, and plain assignment in any scope which inherits the
-    * original namespace is fine, so the second half is done via a callback function. It
-    * doesn't make sense to do a second assingment once the module's evaluation is complete, so
-    * at that point the callback handler is dummied out and any pending callbacks executed.
-    *
-    * On the exporting side, `export Foo` becomes:
-    *
-    *     module.exports.Foo = null;
-    *     // Other module code...
-    *     module.exports.Foo = Foo; // Original line position
-    *     // Other module code...
-    *
-    * This ensures that the names all exist before any other code's import returns, and sets
-    * the correct value once it's known. It's necessary to do this in two stages because only
-    * one type of value has both its declaration and value hoisted: explicitly named functions.
-    */
+    /* This modifies the source of your included Javascript files so that any
+     * import/export statements become require(). See the accompanying README
+     * for details.
+     */
 
     src = src
         .replace(
