@@ -118,7 +118,7 @@ hook.hook(".js", (src, name) => {
             (all, $1) => exporting(new IdentifierList($1).exportAll())
         )
     if(exports_seen) {
-        return `eximportBridge=require("eximport-bridge").bridge;module.exports=eximportBridge.ns;${src}\neximportBridge.commit({${late_exports.map(n => `${n}:${n}`).join(",")}});`
+        return `let eximportBridge=require("eximport-bridge").bridge;module.exports=eximportBridge.ns;${src}\neximportBridge.commit({${late_exports.map(n => `${n}:${n}`).join(",")}});`
     } else {
         return src
     }
