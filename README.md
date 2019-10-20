@@ -72,10 +72,11 @@ consider reporting it if the code in question isn't pathological.
 ### Cyclic Dependencies
 
 Any engine-embedded module support will defer some elements of evaluation of
-module A while module B is loaded - for example if you have `class Foo extends
-Bar` in one file, and `class Bar {} class Baz extends Foo` in another, and
-really the only way to handle that is to have `Foo` and `Baz` as incomplete
-classes which will become complete after all dependent evaluations are complete.
+module A while module B is loaded - for example if you have
+`class Foo extends Bar` in one file, and `class Bar {} class Baz extends Foo` in
+another, and really the only way to handle that is to have `Foo` and `Baz` as
+incomplete classes which will become complete after all dependent evaluations
+are complete.
 
 Any cyclic dependency which would have to be evaluted immediately (including all
 top-level code) won't work because of the complexity of expressing this,
