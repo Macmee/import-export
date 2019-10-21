@@ -84,6 +84,26 @@ Or in async context:
 const foo = await require("foo")._bridge
 ```
 
+In any case, where this happens the immediate context will not have a defined
+value for the datum in question. As with mutual `require()`, you should change
+such expressions to be computed on demand, eg. rather than:
+
+```
+import {b} from "./b"
+export var a = b + 1
+```
+
+You should:
+
+```
+import {b} from "./b"
+export function a() {return b + 1}
+```
+
+This will operate differently - it will require to be called rather than just
+evaluated - but at any time which is not in itself in the middle of mutual
+dependency resolution it'll have a resolved value.
+
 ## How this works
 
 At a simple level, `import {Foo} from "./foo"` is the same as `var Foo =
