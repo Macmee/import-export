@@ -1,3 +1,9 @@
+# 1.1.2
+
+- Outer `require()` now returns at a time when all internal dependency
+  resolution is complete, ie. all symbols will be finally defined unless the
+  calling script is itself part of a mutual dependency loop
+
 # 1.1.1
 
 - *Bug*: if one exportable file was included and required another, the promise
