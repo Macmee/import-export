@@ -54,11 +54,16 @@ expose the whole namespace (`require(...)`), just the default
 
 ## Resolving Non-Immediate Evaluation
 
-Under some circumstances, evaluation might not complete in the current execution
-context, for example this may happen where there's a mutual dependency between
-two files. If this is the case, you might get some symbols defined immediately
-and some later. If this comes up, you can call `.then(...)` on the bridge
-object, eg:
+You might have noticed with `require()` that where _a_ contains `require("b")`
+and _b_ contains `require("a")`, the second one to get loaded gets the value of
+`module.exports` at that time when its corresponding `require()` appeared. In
+other words, mutual dependencies mean temporarily incomplete imports. This
+package still uses `require` so the same rules apply.
+
+In practice, this means that immediate evaluation where mutual `import`s are
+present won't work - but runtime evaluation generally will.
+
+If you get into this situation with a file which `require()`s a file which uses `export`, you can call `.then(...)` on the bridge object, eg:
 
 ```
 var foo = require("foo")
