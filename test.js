@@ -5,6 +5,7 @@ require("./test/import")
 
 const a = require("./test/mutual-a")
 assert.ok(a.hasOwnProperty("A"), "mutual export is initially set")
+assert.equal(a.ab(), 69, "Circular definition works")
 const timeout = setTimeout(
     () => console.error("Passed timeout without import resolving - this is a bug"),
     5000

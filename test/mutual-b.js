@@ -1,4 +1,4 @@
-import {A} from "./mutual-a"
+import {A, a} from "./mutual-a"
 
 class B {
     a() {
@@ -6,3 +6,4 @@ class B {
     }
 }
 export {B}
+export function ba() { return a + 26}
