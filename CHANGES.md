@@ -1,3 +1,8 @@
+# 1.1.3
+
+- *Bug*: `export class` and `export function` statements would not leave a
+  definition in the module's own namespace
+
 # 1.1.2
 
 - Outer `require()` now returns at a time when all internal dependency
