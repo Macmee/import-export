@@ -80,7 +80,7 @@ hook.hook(".js", (src, name) => {
         )
         .replace(
             /\bexport (function|class) ([a-zA-Z0-9_$]*)/g,
-            (a, $1, $2) => exporting(`eximportBridge.ns.${$2}=${$1} ${$2}`)
+            (a, $1, $2) => exporting(`const ${$2}=eximportBridge.ns.${$2}=${$1} ${$2}`)
         )
         .replace(
             /\bexport {(.*?)}/g,
