@@ -1,3 +1,9 @@
+# 2.0.0
+
+- Rewrite to use generators instead of promises. This means that there should in
+  general be no reason to use `._bridge` in an outer `require()` any more
+  because all symbols should be resolved automatically by the time they're used.
+
 # 1.1.3
 
 - *Bug*: `export class` and `export function` statements would not leave a

@@ -5,12 +5,12 @@ projects.
 
 This was forked from the unmaintained `import-export` package.
 
-This exists because Node itself does not support ES6 modules currently - see
-https://nodejs.org/api/esm.html - but the functionality is useful if for little
-more reason than that it's more terse. If/when Node gets production es6 module
-support this package will become redundant and probably stop being maintained,
-because more complicated scenarios absolutely require that you can rearrange the
-AST.
+This exists because Node itself (as of 12.x LTS) does not enable ES6 module
+support by default - see https://nodejs.org/docs/latest-v12.x/api/esm.html - and
+you can't insist that everybody runs node with `--experimental-modules` just to
+load your module. If/when Node gets production ES6 module support this package
+will become redundant and probably stop being maintained, because more
+complicated scenarios absolutely require that you can rearrange the AST.
 
 ## Usage
 
@@ -22,7 +22,6 @@ e.g. you might have an `index.js` like:
 
 ```
 require("eximport")
-
 module.exports = require("./src/foo")
 ```
 
@@ -46,70 +45,19 @@ export default Bar
 
 ## Return from require()
 
-This returns an EximportBridge object.
+This returns an EximportBridgeNamespace object via `eximport-bridge`.
 
 When you're using require() with an import/export module, you may either want to
 expose the whole namespace (`require(...)`), just the default
 (`require(...).default`) or a specific named export (`require(...).Foo`)
 
-## Resolving Non-Immediate Evaluation
-
-You might have noticed with `require()` that where _a_ contains `require("b")`
-and _b_ contains `require("a")`, the second one to get loaded gets the value of
-`module.exports` at that time when its corresponding `require()` appeared. In
-other words, mutual dependencies mean temporarily incomplete imports. This
-package still uses `require` so the same rules apply.
-
-In practice, this means that immediate evaluation where mutual `import`s are
-present won't work - but runtime evaluation generally will.
-
-If you get into this situation with a file which `require()`s a file which uses `export`, you can call `.then(...)` on the bridge object, eg:
-
-```
-var foo = require("foo")
-foo._bridge.then(resolved_ns => foo = resolved_ns)
-```
-
-This will reassign the namespace once it's available. If you prefer to have no
-namespace at all until it's resolved, you can do:
-
-```
-var foo
-require("foo")._bridge.then(ns => foo = ns)
-```
-
-Or in async context:
-
-```
-const foo = await require("foo")._bridge
-```
-
-In any case, where this happens the immediate context will not have a defined
-value for the datum in question. As with mutual `require()`, you should change
-such expressions to be computed on demand, eg. rather than:
-
-```
-import {b} from "./b"
-export var a = b + 1
-```
-
-You should:
-
-```
-import {b} from "./b"
-export function a() {return b + 1}
-```
-
-This will operate differently - it will require to be called rather than just
-evaluated - but at any time which is not in itself in the middle of mutual
-dependency resolution it'll have a resolved value.
-
 ## How this works
 
-At a simple level, `import {Foo} from "./foo"` is the same as `var Foo =
-require("./foo").Foo`. Unfortunately it's not quite that simple because "export"
-hoists (its names exist before the code delaring them is executed), which is
-very valuable when you have circular references but needs to be emulated here.
+At a simple level, `import {Foo} from "./foo"` is the same as
+`var Foo = require("./foo").Foo`. Unfortunately it's not quite that simple
+because "export" hoists (its names exist before the code delaring them is
+executed), which is very valuable when you have circular references but needs to
+be emulated here.
 
 Instead, the code `import {Foo} from "./foo"` becomes roughly:
 
@@ -169,21 +117,3 @@ plain export (which eximport can handle) and the relevant assignment/expression
 You might in some cases have a non-export/non-import expression which is picked
 up as an export or import - if so, that's an unknown bug, and you should
 consider reporting it if the code in question isn't pathological.
-
-### Cyclic Dependencies
-
-Any engine-embedded module support will defer some elements of evaluation of
-module A while module B is loaded - for example if you have
-`class Foo extends Bar` in one file, and `class Bar {} class Baz extends Foo` in
-another, and really the only way to handle that is to have `Foo` and `Baz` as
-incomplete classes which will become complete after all dependent evaluations
-are complete.
-
-Any cyclic dependency which would have to be evaluted immediately (including all
-top-level code) won't work because of the complexity of expressing this,
-particularly where top-level object definitions will be present in both cases.
-
-Later evaluations are worked around by dropping an empty `var` in then updating
-it once loaded. As a result, evaluation of a module might not be complete
-immediately from the perspective of the caller if there's a dependency cycle
-which includes the caller.
