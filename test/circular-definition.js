@@ -10,8 +10,7 @@ let run_in_current_context = false
 assert.doesNotReject(async () => {
     run_in_current_context = true
     try {
-        const ns = await a._bridge
-        assert.ok(ns.A, "mutual export is set to a real value after then()")
+        assert.ok(a.A, "mutual export is set to a real value")
     } catch(e) {
         console.log(e)
     }
