@@ -1,2 +1,3 @@
-const A = require("./a")._bridge.ns
-console.log(A.a)
+const assert = require("assert")
+const A = require("./a")
+assert.equal(A.a, 2)

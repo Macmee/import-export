@@ -1,3 +1,4 @@
-const A = require("./a")._bridge.ns.A
+const assert = require("assert")
+const A = require("./a").A
 const a = new A()
-console.log(a.b.c.b)
+assert.equal(a.b.c.b, 1)
