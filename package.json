@@ -1,18 +1,19 @@
 {
-  "name": "import-export",
-  "version": "1.0.1",
+  "name": "eximport",
+  "version": "2.0.0",
   "description": "Use ECMA6 import/export syntax from within NodeJS (simply require this module)",
   "main": "index.js",
   "dependencies": {
+    "eximport-bridge": "^2.0.0",
     "node-hook": "^0.4.0"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Macmee/import-export.git"
+    "url": "https://github.com/jj101k/eximport.git"
   },
   "keywords": [
     "import",
@@ -21,10 +22,10 @@
     "ecma6",
     "commonjs"
   ],
-  "author": "= <=> (=)",
+  "author": "Jim Driscoll",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Macmee/import-export/issues"
+    "url": "https://github.com/jj101k/eximport/issues"
   },
-  "homepage": "https://github.com/Macmee/import-export"
+  "homepage": "https://github.com/jj101k/eximport"
 }
